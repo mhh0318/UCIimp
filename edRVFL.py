@@ -6,7 +6,6 @@ from MRVFL import *
 
 # load dataset
 # dataX
-from UCIimp.MRVFL import MRVFL
 
 mat = sio.loadmat('dataX.mat')
 dataX = mat['dataX']

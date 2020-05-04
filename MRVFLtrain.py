@@ -1,93 +1,101 @@
-import numpy as np
+import cupy as cp
 import time
-import numpy.matlib
 from function import *
+from l2_weights import *
 from majorityVoting import *
 from model import model as mod
 from sklearn.linear_model import ridge_regression as L2Regularization
 
 
-def MRVFLtrain(trainX,trainY,option):
-    
-    rand_seed= np.random.RandomState(option.seed)
+def MRVFLtrain(trainX, trainY, option):
+    selected_amount = 10
 
-    [Nsample,Nfea] = trainX.shape
+    rand_seed = cp.random.RandomState(option.seed)
+
+    [n_sample, n_dims] = trainX.shape
     N = option.N
     L = option.L
     C = option.C
-    s = option.scale   #scaling factor
+    s = option.scale
 
-
-    A=[]
-    beta=[]
+    A = []
+    beta = []
     weights = []
     biases = []
     mu = []
     sigma = []
-    ProbScores=[]
+    ProbScores = []
+    selected_features = []
+    sfi = []
 
+    A_input = trainX
 
-    A_input= trainX
-
-
-    time_start=time.time()
-
+    time_start = time.time()
 
     for i in range(L):
 
-        if i==0:
-            w = s*2*rand_seed.rand(Nfea,N)-1
+        if i == 0:
+            w = s * 2 * rand_seed.rand(n_dims, N) - 1
 
         else:
-            w = s*2*rand_seed.rand(Nfea+N,N)-1
+            w = s * 2 * rand_seed.rand(n_dims + selected_amount * i + N, N) - 1
 
-        b = s*rand_seed.rand(1,N)
+        b = s * rand_seed.rand(1, N)
         weights.append(w)
         biases.append(b)
 
-        A_ = np.matmul(A_input,w)
+        A_ = cp.matmul(A_input, w)
         # layer normalization
-        A_mean = np.mean(A_,axis=0)
-        A_std = np.std(A_,axis=0)
-        A_ = (A_-A_mean)/A_std
+        A_mean = cp.mean(A_, axis=0)
+        A_std = cp.std(A_, axis=0)
+        A_ = (A_ - A_mean) / A_std
         mu.append(A_mean)
         sigma.append(A_std)
 
-        A_ = A_+np.repeat(b,Nsample,0)
+        A_ = A_ + cp.repeat(b, n_sample, 0)
         A_ = relu(A_)
-        A_tmp = np.concatenate([A_input,A_,np.ones((Nsample,1))],axis=1)
-        #beta1=l2_weights(A1_temp1,trainY,C,Nsample)
-        beta1 = L2Regularization(A_tmp,trainY,1/C).T
+        A_tmp = cp.concatenate([A_input, A_, cp.ones((n_sample, 1))], axis=1)
+        # beta_ = L2Regularization(A_tmp,trainY,1/C).T
+        beta_ = l2_weights(A_tmp, trainY, C, n_sample)
+        significance = cp.linalg.norm(beta_, ord=1, axis=1)
+        top_index = cp.argsort(significance)
+        if i == 0:
+            top_index = top_index[top_index - (n_dims + selected_amount) >= 0] - (n_dims + selected_amount)
+        else:
+            top_index = top_index[top_index - (n_dims + selected_amount * i + N) >= 0] - (
+                    n_dims + selected_amount * i + N)
+        # Replace
+
+        # Updating Append List
+
+        # Append
+        selected_index = top_index[:selected_amount]
+        A_selected = A_[:, selected_index]
+        sfi.append(selected_index)
+        selected_features.append(A_selected)
 
         A.append(A_tmp)
-        beta.append(beta1)
+        beta.append(beta_)
 
-        #clear A_ A1_temp1 A1_temp2 beta1
-        A_input = np.concatenate([trainX,A_],axis=1)
-
+        # print('Layer:{}'.format(i+1))
+        sf = cp.concatenate(selected_features, axis=1)
+        A_input = cp.concatenate([trainX, A_, sf], axis=1)
 
     time_end = time.time()
-    Training_time = time_end-time_start
-
+    Training_time = time_end - time_start
 
     ## Calculate the training accuracy
-    pred_idx=np.array([Nsample,L])
+    pred_result = cp.random.rand(n_sample, L)
     for i in range(L):
-        Ai=A[i]
-        beta_temp=beta[i]
-        trainY_temp=np.matmul(Ai,beta_temp)
-        indx=np.argmax(trainY_temp,axis=1)
-        indx=indx.reshape(Nsample,1)
-        if i==0:
-            pred_idx=indx
-        else:
-            pred_idx=np.concatenate([pred_idx,indx],axis=1)
+        Ai = A[i]
+        beta_temp = beta[i]
+        predict_score = cp.matmul(Ai, beta_temp)
+        predict_index = cp.argmax(predict_score, axis=1).ravel()
+        # indx=indx.reshape(n_sample,1)
+        pred_result[:, i] = predict_index
 
+    TrainingAccuracy = majorityVoting(trainY, pred_result)
 
-    TrainingAccuracy = majorityVoting(trainY,pred_idx)
+    model = mod(L, weights, biases, beta, mu, sigma, sfi)
 
-
-    model = mod(L,weights,biases,beta,mu,sigma)
-        
-    return model,TrainingAccuracy,Training_time
-
+    return model, TrainingAccuracy, Training_time
