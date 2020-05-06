@@ -53,7 +53,7 @@ def MRVFLtrain(trainX, trainY, option):
         sigma.append(A_std)
 
         A_ = A_ + cp.repeat(b, n_sample, 0)
-        A_ = relu(A_)
+        A_ = selu(A_)
         A_tmp = cp.concatenate([A_input, A_, cp.ones((n_sample, 1))], axis=1)
         # beta_ = L2Regularization(A_tmp,trainY,1/C).T
         beta_ = l2_weights(A_tmp, trainY, C, n_sample)

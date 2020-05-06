@@ -26,7 +26,7 @@ def MRVFLpredict(testX, testY, model):
         A_ = cp.matmul(A_input, w[i])
         A_ = (A_ - mu[i]) / sigma[i]
         A_ = A_ + cp.repeat(b[i], n_sample, 0)
-        A_ = relu(A_)
+        A_ = selu(A_)        # Replace Relu to selu
         A_tmp = cp.concatenate([A_input, A_, cp.ones((n_sample, 1))], axis=1)
         sf_tmp = A_[:, sfi[i]]
 

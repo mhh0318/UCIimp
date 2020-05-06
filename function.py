@@ -14,4 +14,6 @@ def sigmoid(x):
     return x
 
 def selu(x):
-    pass
+    alpha = 1.6732632423543772848170429916717
+    scale = 1.0507009873554804934193349852946
+    return scale*cp.where(x >= 0, x, alpha*(cp.exp(x)-1))
