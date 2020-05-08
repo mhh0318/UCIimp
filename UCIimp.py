@@ -18,7 +18,7 @@ def main(dataset):
     root_path = '/home/hu/eRVFL/UCIdata'
     # data_name = 'cardiotocography-10clases'
     data_name = dataset
-    n_device = 7
+    n_device = 1
     print('Dataset Name:{}\nDevice Number:{}'.format(data_name,n_device))
     logging.debug('Dataset Name:{}\tDevice Number:{}'.format(data_name,n_device))
     cp.cuda.Device(n_device).use()
@@ -172,10 +172,10 @@ def main(dataset):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='LOGfseRVFL-updated.txt', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename='LOGfseRVFL-replace-50+.txt', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
     logging.debug('Start of program')
     files = os.listdir('/home/hu/eRVFL/UCIdata')
-    for file in files[6:]:
+    for file in files[50:]:
         if file in ['adult','band','chess-krvk','connect-4','letter','magic','miniboone','statlog-shuttle']:
             pass
         else:
