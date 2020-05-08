@@ -113,7 +113,7 @@ def main(dataset):
                             logging.debug('Temp Best Option:{}'.format(option_best.__dict__))
                             del model_tmp
                             cp._default_memory_pool.free_all_blocks()
-                        elif MAX_acc >= test_acc_temp > sMAX_acc:
+                        elif MAX_acc > test_acc_temp > sMAX_acc:
                             tMAX_acc = sMAX_acc
                             sMAX_acc = test_acc_temp
                             option_sbest.acc_test = test_acc_temp
@@ -128,7 +128,7 @@ def main(dataset):
                             logging.debug('Temp Second Best Option:{}'.format(option_best.__dict__))
                             del model_tmp
                             cp._default_memory_pool.free_all_blocks()
-                        elif sMAX_acc >= test_acc_temp > tMAX_acc:
+                        elif sMAX_acc > test_acc_temp > tMAX_acc:
                             tMAX_acc = test_acc_temp
                             option_tbest.acc_test = test_acc_temp
                             option_tbest.acc_train = train_acc_temp
