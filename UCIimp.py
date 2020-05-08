@@ -50,7 +50,7 @@ def main(dataset):
 
     option = op(256, 32, 2**-6, 1, 0, 0, 0.7, 'replace')
     N_range = [256,512,1024]
-    L = 20
+    L = 16
     option.scale = 0.5
     C_range = range(-6,12,2)
 
