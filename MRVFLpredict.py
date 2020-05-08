@@ -15,6 +15,11 @@ def MRVFLpredict(testX, testY, model):
     sigma = model.sigma
     L = model.L
     sfi = model.sfi
+    mode = model.mode
+
+    if mode == 'replace':
+        tfi = model.tfi
+        bi = model.bi
 
     A = []
     A_input = testX
@@ -27,21 +32,38 @@ def MRVFLpredict(testX, testY, model):
         A_ = (A_ - mu[i]) / sigma[i]
         A_ = A_ + cp.repeat(b[i], n_sample, 0)
         A_ = selu(A_)        # Replace Relu to selu
-        A_tmp = cp.concatenate([A_input, A_, cp.ones((n_sample, 1))], axis=1)
+        # A_tmp = cp.concatenate([A_input, A_, cp.ones((n_sample, 1))], axis=1)
+        if i == 0:
+            A_tmp = cp.concatenate([testX, A_, cp.ones((n_sample, 1))], axis=1)
+        elif mode == 'append':
+            A_tmp = cp.concatenate([testX, sfs, A_, cp.ones((n_sample, 1))], axis=1)
+        elif mode == 'updated':
+            A_tmp = cp.concatenate([testX, sf_tmp, A_, cp.ones((n_sample, 1))], axis=1)
+        elif mode == 'replace':
+            A_tmp = cp.concatenate([testX, A_, cp.ones((n_sample, 1))], axis=1)
+
         sf_tmp = A_[:, sfi[i]]
 
         selected_features.append(sf_tmp)
         A.append(A_tmp)
-        sfs = cp.concatenate(selected_features, axis=1)
-        A_input = cp.concatenate([testX, A_, sfs], axis=1)
-        # print('layer:{}'.format(i+1))
+        if mode == 'append':
+            sfs = cp.concatenate(selected_features, axis=1)
+            A_input = cp.concatenate([testX, sfs, A_], axis=1)
+        elif mode == 'updated':
+            A_input = cp.concatenate([testX, sf_tmp, A_], axis=1)
+        elif mode == 'replace':
+            if i != 0:
+                tf_tmp = A_[:, tfi[i]]
+                A_[:,bi[i-1]] = tf_tmp
+            A_input = cp.concatenate([testX, A_], axis=1)
+        #print('layer:{}'.format(i+1))
 
     pred_idx = cp.array([n_sample, L])
     for i in range(L):
         A_temp = A[i]
         beta_temp = beta[i]
-        trainY_temp = cp.matmul(A_temp, beta_temp)
-        indx = cp.argmax(trainY_temp, axis=1)
+        testY_temp = cp.matmul(A_temp, beta_temp)
+        indx = cp.argmax(testY_temp, axis=1)
         indx = indx.reshape(n_sample, 1)
         if i == 0:
             pred_idx = indx
