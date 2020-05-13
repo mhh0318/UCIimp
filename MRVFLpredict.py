@@ -15,6 +15,7 @@ def MRVFLpredict(testX, testY, model):
     sigma = model.sigma
     L = model.L
     sfi = model.sfi
+    bi = model.bi
 
     A = []
     A_input = testX
@@ -27,13 +28,16 @@ def MRVFLpredict(testX, testY, model):
         A_ = (A_ - mu[i]) / sigma[i]
         A_ = A_ + cp.repeat(b[i], n_sample, 0)
         A_ = selu(A_)        # Replace Relu to selu
-        A_tmp = cp.concatenate([A_input, A_, cp.ones((n_sample, 1))], axis=1)
-        sf_tmp = A_[:, sfi[i]]
+        if i==0:
+            A_tmp = cp.concatenate([testX, A_, cp.ones((n_sample, 1))], axis=1)
+        else:
+            A_tmp = cp.concatenate([testX, A_, sf_tmp, cp.ones((n_sample, 1))], axis=1)
 
-        selected_features.append(sf_tmp)
         A.append(A_tmp)
-        sfs = cp.concatenate(selected_features, axis=1)
-        A_input = cp.concatenate([testX, A_, sfs], axis=1)
+        A_except_testX = A_tmp[:, n_dims: -1]
+        A_ = A_except_testX[:,bi[i]]
+        sf_tmp = A_except_testX[:, sfi[i]]
+        A_input = cp.concatenate([testX, sf_tmp, A_], axis=1)
         # print('layer:{}'.format(i+1))
 
     pred_idx = cp.array([n_sample, L])

@@ -1,5 +1,5 @@
 class model:
-    def __init__(self, L,w,b,beta,mu,sigma,sfi):
+    def __init__(self, L,w,b,beta,mu,sigma,sfi,bi):
         self.L = L
         self.w = w
         self.b = b
@@ -7,4 +7,5 @@ class model:
         self.mu=mu
         self.sigma=sigma
         self.sfi = sfi
+        self.bi = bi
 
