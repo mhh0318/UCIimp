@@ -1,4 +1,5 @@
 import cupy as cp
+import numpy as np
 import time
 from function import *
 from l2_weights import *
@@ -7,7 +8,7 @@ from model import model as mod
 
 
 def MRVFLtrain(trainX, trainY, option):
-    rand_seed = cp.random.RandomState(option.seed)
+    rand_seed = np.random.RandomState(2)
 
 
     [n_sample, n_dims] = trainX.shape
@@ -41,13 +42,13 @@ def MRVFLtrain(trainX, trainY, option):
     for i in range(L):
 
         if i == 0:
-            w = s * 2 * rand_seed.rand(n_dims, N) - 1
+            w = s * 2 * cp.asarray(rand_seed.rand(n_dims, N)) - 1
 
         elif mode == 'merged':
-            w = s * 2 * rand_seed.rand(n_dims + selected_amount - drop_amount + N, N) - 1
+            w = s * 2 * cp.asarray(rand_seed.rand(n_dims  - drop_amount + N, N)) - 1
 
 
-        b = s * rand_seed.rand(1, N)
+        b = s * cp.asarray(rand_seed.rand(1, N))
         weights.append(w)
         biases.append(b)
 
@@ -82,7 +83,8 @@ def MRVFLtrain(trainX, trainY, option):
         A_selected = A_except_trainX[:, selected_index]
         A_ = A_except_trainX[:,left_index]
         sf = A_selected
-        A_input = cp.concatenate([trainX, sf, A_], axis=1)
+        #A_input = cp.concatenate([trainX, sf, A_], axis=1)
+        A_input = cp.concatenate([trainX,  A_], axis=1)
         bi.append(left_index)
         # print('layer{}'.format(i+1))
 

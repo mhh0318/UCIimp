@@ -1,6 +1,5 @@
 import cupy as cp
 import time
-import numpy.matlib
 from function import *
 from majorityVoting import *
 
@@ -37,7 +36,8 @@ def MRVFLpredict(testX, testY, model):
         A_except_testX = A_tmp[:, n_dims: -1]
         A_ = A_except_testX[:,bi[i]]
         sf_tmp = A_except_testX[:, sfi[i]]
-        A_input = cp.concatenate([testX, sf_tmp, A_], axis=1)
+        #A_input = cp.concatenate([testX, sf_tmp, A_], axis=1)
+        A_input = cp.concatenate([testX, A_], axis=1)
         # print('layer:{}'.format(i+1))
 
     pred_idx = cp.array([n_sample, L])

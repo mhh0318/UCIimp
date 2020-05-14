@@ -10,10 +10,11 @@ import numpy as np
 from rescale import *
 from option import option as op
 from MRVFL import *
+import time
 
 root_path = '/home/hu/eRVFL/UCIdata'
-data_name = 'plant-margin'
-n_device = 6
+data_name = 'iris'
+n_device = 2
 print('Dataset Name:{}\nDevice Number:{}'.format(data_name, n_device))
 
 cp.cuda.Device(n_device).use()
@@ -43,7 +44,7 @@ for i in range(n_types):
         if dataY[j] == types[i]:
             dataY_tmp[j, i] = 1
 
-option = op(N=256, L=32, C=2 ** -6, scale=1, seed=0, nCV=0, ratio=0, mode='merged', drop=0)
+option = op(N=256, L=32, C=2 ** -6, scale=1, seed=1, nCV=0, ratio=0, mode='merged', drop=0)
 N_range = [256, 512, 1024]
 L = 16
 option.scale = 1
@@ -64,7 +65,7 @@ tMAX_acc = 0
 option_best = op(N=256, L=32, C=2 ** -6, scale=1, seed=0, nCV=0, ratio=0, mode='merged', drop=0)
 option_sbest = op(N=256, L=32, C=2 ** -6, scale=1, seed=0, nCV=0, ratio=0, mode='merged', drop=0)
 option_tbest = op(N=256, L=32, C=2 ** -6, scale=1, seed=0, nCV=0, ratio=0, mode='merged', drop=0)
-
+a = time.time()
 for i in range(n_CV):
     MAX_acc = 0
     sMAX_acc = 0
@@ -159,6 +160,8 @@ for i in range(n_CV):
     cp._default_memory_pool.free_all_blocks()
     print('Best Train accuracy in fold{}:{}\nBest Test accuracy in fold{}:{}'.format(i, train_acc_result[i], i,
                                                                                      test_acc_result[i]))
+b= time.time()
+print('#########################################\nTraining time:{:.2f}s\n#########################################'.format((b - a)/25))
 
 mean_train_acc = train_acc_result.mean()
 mean_test_acc = test_acc_result.mean()
