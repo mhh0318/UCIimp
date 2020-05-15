@@ -45,7 +45,9 @@ def MRVFLtrain(trainX, trainY, option):
             w = s * 2 * cp.asarray(rand_seed.rand(n_dims, N)) - 1
 
         elif mode == 'merged':
-            w = s * 2 * cp.asarray(rand_seed.rand(n_dims  - drop_amount + N, N)) - 1
+            ######################### SETTING
+            # w = s * 2 * cp.asarray(rand_seed.rand(n_dims - drop_amount + N, N)) - 1
+            w = s * 2 * cp.asarray(rand_seed.rand(n_dims + selected_amount - drop_amount + N, N)) - 1
 
 
         b = s * cp.asarray(rand_seed.rand(1, N))
@@ -62,7 +64,6 @@ def MRVFLtrain(trainX, trainY, option):
 
         A_ = A_ + cp.repeat(b, n_sample, 0)
         A_ = selu(A_)
-        #A_tmp = cp.concatenate([A_input, A_, cp.ones((n_sample, 1))], axis=1)  # Double the input, append index should be (n_dims + selected_amount * i +N)
         if i == 0:
             A_tmp = cp.concatenate([trainX, A_, cp.ones((n_sample, 1))], axis=1)
         else:
@@ -83,10 +84,11 @@ def MRVFLtrain(trainX, trainY, option):
         A_selected = A_except_trainX[:, selected_index]
         A_ = A_except_trainX[:,left_index]
         sf = A_selected
-        #A_input = cp.concatenate([trainX, sf, A_], axis=1)
-        A_input = cp.concatenate([trainX,  A_], axis=1)
+
+        ################### SETTING
+        A_input = cp.concatenate([trainX, sf, A_], axis=1)
+        #A_input = cp.concatenate([trainX,  A_], axis=1)
         bi.append(left_index)
-        # print('layer{}'.format(i+1))
 
     time_end = time.time()
     Training_time = time_end - time_start
