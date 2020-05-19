@@ -15,10 +15,11 @@ def MRVFLpredict(testX, testY, model):
     L = model.L
     sfi = model.sfi
     bi = model.bi
+    TestingAccuracy= cp.zeros(L)
 
     A = []
     A_input = testX
-    selected_features = []
+    fs = []
 
     time_start = time.time()
 
@@ -35,26 +36,38 @@ def MRVFLpredict(testX, testY, model):
         A.append(A_tmp)
         A_except_testX = A_tmp[:, n_dims: -1]
         A_ = A_except_testX[:,bi[i]]
-        sf_tmp = A_except_testX[:, sfi[i]]
+        A_select = A_except_testX[:, sfi[i]]
+        fs.append(A_select)
+
+        sf_tmp = A_select
+        #sf_tmp = cp.concatenate(fs, axis=1)
+
         ############ SETTINNG
         A_input = cp.concatenate([testX, sf_tmp, A_], axis=1)
-        #A_input = cp.concatenate([testX, A_], axis=1)
-        # print('layer:{}'.format(i+1))
+        # A_input = cp.concatenate([testX, A_], axis=1)
 
-    pred_idx = cp.array([n_sample, L])
+        pred_result = cp.zeros((n_sample, i+1))
+        for j in range(i+1):
+            Ai = A[j]
+            beta_temp = beta[j]
+            predict_score = cp.matmul(Ai, beta_temp)
+            predict_index = cp.argmax(predict_score, axis=1).ravel()
+            # indx=indx.reshape(n_sample,1)
+            pred_result[:, j] = predict_index
+        TestingAccuracy_temp = majorityVoting(testY, pred_result)
+        TestingAccuracy[i] = TestingAccuracy_temp
+    '''
+    pred_result = cp.zeros((n_sample, L))
     for i in range(L):
-        A_temp = A[i]
+        Ai = A[i]
         beta_temp = beta[i]
-        trainY_temp = cp.matmul(A_temp, beta_temp)
-        indx = cp.argmax(trainY_temp, axis=1)
-        indx = indx.reshape(n_sample, 1)
-        if i == 0:
-            pred_idx = indx
-        else:
-            pred_idx = cp.concatenate([pred_idx, indx], axis=1)
+        predict_score = cp.matmul(Ai, beta_temp)
+        predict_index = cp.argmax(predict_score, axis=1).ravel()
+        # indx=indx.reshape(n_sample,1)
+        pred_result[:, i] = predict_index
 
-    TestingAccuracy = majorityVoting(testY, pred_idx)
-
+    TestingAccuracy = majorityVoting(testY, predict_idx)
+    '''
     time_end = time.time()
 
     Testing_time = time_end - time_start

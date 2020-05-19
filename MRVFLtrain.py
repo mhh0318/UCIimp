@@ -20,6 +20,7 @@ def MRVFLtrain(trainX, trainY, option):
     ratio = option.ratio
     drop = option.drop
 
+    TrainingAccuracy = cp.zeros(L)
 
     if mode == 'merged':
         drop_amount = cp.int(cp.floor(drop*N))
@@ -34,6 +35,7 @@ def MRVFLtrain(trainX, trainY, option):
     mu = []
     sigma = []
     sfi = []
+    fs = []
 
     A_input = trainX
 
@@ -48,6 +50,7 @@ def MRVFLtrain(trainX, trainY, option):
             ######################### SETTING
             # w = s * 2 * cp.asarray(rand_seed.rand(n_dims - drop_amount + N, N)) - 1
             w = s * 2 * cp.asarray(rand_seed.rand(n_dims + selected_amount - drop_amount + N, N)) - 1
+            # w = s * 2 * cp.asarray(rand_seed.rand(n_dims + selected_amount*i - drop_amount + N, N)) - 1
 
 
         b = s * cp.asarray(rand_seed.rand(1, N))
@@ -82,19 +85,34 @@ def MRVFLtrain(trainX, trainY, option):
         left_index = ranked_index[:left_amount]
         A_except_trainX = A_tmp[:, n_dims: -1]
         A_selected = A_except_trainX[:, selected_index]
+        fs.append(A_selected)
         A_ = A_except_trainX[:,left_index]
+
+        ################### SETTING
         sf = A_selected
+        # sf = cp.concatenate(fs, axis=1)
 
         ################### SETTING
         A_input = cp.concatenate([trainX, sf, A_], axis=1)
-        #A_input = cp.concatenate([trainX,  A_], axis=1)
+        # A_input = cp.concatenate([trainX,  A_], axis=1)
+
+
         bi.append(left_index)
 
-    time_end = time.time()
-    Training_time = time_end - time_start
+        pred_result = cp.zeros((n_sample, i+1))
+        for j in range(i+1):
+            Ai = A[j]
+            beta_temp = beta[j]
+            predict_score = cp.matmul(Ai, beta_temp)
+            predict_index = cp.argmax(predict_score, axis=1).ravel()
+            # indx=indx.reshape(n_sample,1)
+            pred_result[:, j] = predict_index
+        TrainingAccuracy_temp = majorityVoting(trainY,pred_result)
+        TrainingAccuracy[i] = TrainingAccuracy_temp
 
+    '''    
     ## Calculate the training accuracy
-    pred_result = cp.random.rand(n_sample, L)
+    pred_result = cp.zeros((n_sample, L))
     for i in range(L):
         Ai = A[i]
         beta_temp = beta[i]
@@ -102,8 +120,14 @@ def MRVFLtrain(trainX, trainY, option):
         predict_index = cp.argmax(predict_score, axis=1).ravel()
         # indx=indx.reshape(n_sample,1)
         pred_result[:, i] = predict_index
-
+        
     TrainingAccuracy = majorityVoting(trainY, pred_result)
+    '''
+
+    time_end = time.time()
+    Training_time = time_end - time_start
+
+
 
     model = mod(L, weights, biases, beta, mu, sigma, sfi, bi)
 
