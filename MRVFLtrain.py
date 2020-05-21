@@ -72,6 +72,16 @@ def MRVFLtrain(trainX, trainY, option):
         else:
             A_tmp = cp.concatenate([trainX, sf, A_, cp.ones((n_sample, 1))], axis=1)
         beta_ = l2_weights(A_tmp, trainY, C, n_sample)
+
+        ''' Joint Mutual Information Feature Selection
+        import mifs
+        MIFS = mifs.MutualInformationFeatureSelector(method='JMI',n_features=selected_amount - 2*drop_amount + N)
+        at = cp.asnumpy(A_tmp[:,n_dims:-1])
+        ty = cp.asnumpy(trainY)
+        ty = np.array([np.argmax(one_hot) for one_hot in ty])
+        MIFS.fit(at, ty)
+        '''
+
         significance = cp.linalg.norm(beta_, ord=1, axis=1)
         ranked_index = cp.argsort(significance[n_dims:-1])
 

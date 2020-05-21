@@ -112,7 +112,7 @@ def main(dataset,device_number):
                                 option_best.acc_train = train_acc_temp.max()
                                 option_best.C = option.C
                                 option_best.N = option.N
-                                option_best.L = test_acc_temp.argmax()
+                                option_best.L = cp.int(test_acc_temp.argmax()+1)
                                 option_best.scale = option.scale
                                 option_best.nCV = i
                                 option_best.ratio = r
@@ -127,7 +127,7 @@ def main(dataset,device_number):
                                 option_sbest.acc_train = train_acc_temp.max()
                                 option_sbest.C = option.C
                                 option_sbest.N = option.N
-                                option_sbest.L = test_acc_temp.argmax()
+                                option_sbest.L = cp.int(test_acc_temp.argmax()+1)
                                 option_sbest.scale = option.scale
                                 option_sbest.nCV = i
                                 option_sbest.ratio = r
@@ -141,7 +141,7 @@ def main(dataset,device_number):
                                 option_tbest.acc_train = train_acc_temp.max()
                                 option_tbest.C = option.C
                                 option_tbest.N = option.N
-                                option_tbest.L = test_acc_temp.argmax()
+                                option_tbest.L = cp.int(test_acc_temp.argmax()+1)
                                 option_tbest.scale = option.scale
                                 option_tbest.nCV = i
                                 option_tbest.ratio = r
@@ -183,12 +183,12 @@ def main(dataset,device_number):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='RVFL-MFS-6.txt', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename='RVFL-MFS-2.txt', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
     logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
     logging.debug('Start of program')
     files = os.listdir('/home/hu/eRVFL/UCIdata')
-    for file in files[72:84]:
+    for file in files[115:121]:
         if file in ['adult','band','chess-krvk','connect-4','letter','magic','miniboone','statlog-shuttle']:
             pass
         else:
-            main(dataset=file,device_number=6)
+            main(dataset=file,device_number=2)
