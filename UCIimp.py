@@ -54,6 +54,7 @@ def main(dataset,device_number):
     option = op(N=256, L=16, C=2 ** -6, scale=1, seed=1, nCV=0, ratio=0, mode='merged', drop=0)
     if dataX.shape[1]<=16:
         N_range = [16, 32, 64]
+        #N_range = [1024, 2048, 4096]
     elif dataX.shape[1]<=64:
         N_range = [64, 128, 256, 512]
     else:
@@ -61,6 +62,7 @@ def main(dataset,device_number):
     option.L = 16
     option.scale = 1
     C_range = np.append(0,2.**np.arange(-6, 12, 2))
+    # C_range = 2.**np.arange(-6, 12, 2)
 
 
     Models = []
@@ -187,8 +189,10 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
     logging.debug('Start of program')
     files = os.listdir('/home/hu/eRVFL/UCIdata')
-    for file in files[115:121]:
-        if file in ['adult','band','chess-krvk','connect-4','letter','magic','miniboone','statlog-shuttle']:
-            pass
-        else:
+    for file in files[:]:
+        # if file in ['adult','chess-krvk','connect-4','letter','magic','miniboone','statlog-shuttle']:
+        if file in ['spectf','molec-biol-promoter', 'musk-1']:
             main(dataset=file,device_number=2)
+        else:
+            # main(dataset=file,device_number=2)
+            pass

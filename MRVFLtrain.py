@@ -5,11 +5,15 @@ from function import *
 from l2_weights import *
 from majorityVoting import *
 from model import model as mod
+from dask.distributed import Client
+import joblib
+from joblib import Parallel,delayed
+
 
 
 def MRVFLtrain(trainX, trainY, option):
+    fs_mode = 'LASSO'
     rand_seed = np.random.RandomState(2)
-
 
     [n_sample, n_dims] = trainX.shape
     N = option.N
@@ -73,18 +77,17 @@ def MRVFLtrain(trainX, trainY, option):
             A_tmp = cp.concatenate([trainX, sf, A_, cp.ones((n_sample, 1))], axis=1)
         beta_ = l2_weights(A_tmp, trainY, C, n_sample)
 
-        ''' Joint Mutual Information Feature Selection
-        import mifs
-        MIFS = mifs.MutualInformationFeatureSelector(method='JMI',n_features=selected_amount - 2*drop_amount + N)
-        at = cp.asnumpy(A_tmp[:,n_dims:-1])
-        ty = cp.asnumpy(trainY)
-        ty = np.array([np.argmax(one_hot) for one_hot in ty])
-        MIFS.fit(at, ty)
-        '''
-
-        significance = cp.linalg.norm(beta_, ord=1, axis=1)
-        ranked_index = cp.argsort(significance[n_dims:-1])
-
+        if fs_mode == 'LASSO':
+            significance = cp.linalg.norm(beta_, ord=1, axis=1)
+            ranked_index = cp.argsort(significance[n_dims:-1])
+        elif fs_mode == 'MI':
+            at = cp.asnumpy(A_tmp[:,n_dims:-1])
+            ty = cp.asnumpy(cp.asarray([cp.argmax(i) for i in trainY]))
+            mis = mi(at, ty)
+            # with joblib.parallel_backend('loky'):
+                # mis = Parallel(10)(delayed(mi)(at[:, i].reshape(-1, 1), ty) for i in range(N))
+            # ranked_index = cp.argsort(cp.asarray(mis).ravel())
+            ranked_index = cp.argsort(mis)
         A.append(A_tmp)
         beta.append(beta_)
 

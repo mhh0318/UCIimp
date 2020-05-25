@@ -7,14 +7,13 @@ Created on 2020/5/8 1:36
 import os
 import cupy as cp
 import numpy as np
-from rescale import *
 from option import option as op
 from MRVFL import *
 import time
 
 root_path = '/home/hu/eRVFL/UCIdata'
-data_name = 'congressional-voting'
-n_device = 0
+data_name = 'lung-cancer'
+n_device = 1
 print('Dataset Name:{}\nDevice Number:{}'.format(data_name, n_device))
 
 cp.cuda.Device(n_device).use()
@@ -45,7 +44,8 @@ for i in range(n_types):
             dataY_tmp[j, i] = 1
 
 option = op(N=256, L=32, C=2 ** -6, scale=1, seed=1, nCV=0, ratio=0, mode='merged', drop=0)
-N_range = [256, 512, 1024]
+# N_range = [256, 512, 1024]
+N_range = [64, 128, 256, 512]
 # N_range = [16, 32, 64]
 L = 32
 option.scale = 1
