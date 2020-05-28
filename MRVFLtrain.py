@@ -5,14 +5,14 @@ from function import *
 from l2_weights import *
 from majorityVoting import *
 from model import model as mod
-from dask.distributed import Client
+from inf_fs import *
 import joblib
 from joblib import Parallel,delayed
 
 
 
 def MRVFLtrain(trainX, trainY, option):
-    fs_mode = 'LASSO'
+    fs_mode = 'RIDGE'
     rand_seed = np.random.RandomState(2)
 
     [n_sample, n_dims] = trainX.shape
@@ -80,6 +80,9 @@ def MRVFLtrain(trainX, trainY, option):
         if fs_mode == 'LASSO':
             significance = cp.linalg.norm(beta_, ord=1, axis=1)
             ranked_index = cp.argsort(significance[n_dims:-1])
+        if fs_mode == 'RIDGE':
+            significance = cp.linalg.norm(beta_, ord=2, axis=1)
+            ranked_index = cp.argsort(significance[n_dims:-1])
         elif fs_mode == 'MI':
             at = cp.asnumpy(A_tmp[:,n_dims:-1])
             ty = cp.asnumpy(cp.asarray([cp.argmax(i) for i in trainY]))
@@ -88,6 +91,11 @@ def MRVFLtrain(trainX, trainY, option):
                 # mis = Parallel(10)(delayed(mi)(at[:, i].reshape(-1, 1), ty) for i in range(N))
             # ranked_index = cp.argsort(cp.asarray(mis).ravel())
             ranked_index = cp.argsort(mis)
+        elif fs_mode == 'INF':
+            at = cp.asnumpy(A_tmp[:, n_dims:-1])
+            rank, score = inf_fs(at)
+            ranked_index = rank
+
         A.append(A_tmp)
         beta.append(beta_)
 

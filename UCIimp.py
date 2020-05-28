@@ -91,8 +91,9 @@ def main(dataset,device_number):
             option.N = n
             for j in C_range:
                 option.C = j
-                for r in cp.arange(0, 0.6, 0.2):
+                for r in cp.arange(0, 0.6, 0.1):
                     option.ratio = r
+                    # for d in [0]:
                     for d in cp.arange(0, 0.6, 0.2):
                         option.drop = d
                         train_idx_val = cp.where(validation[:, i] == 0)[0]
@@ -185,14 +186,15 @@ def main(dataset,device_number):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='RVFL-MFS-2.txt', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename='RVFL-mFS-INF-4.txt', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
     logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
     logging.debug('Start of program')
     files = os.listdir('/home/hu/eRVFL/UCIdata')
-    for file in files[:]:
-        # if file in ['adult','chess-krvk','connect-4','letter','magic','miniboone','statlog-shuttle']:
-        if file in ['spectf','molec-biol-promoter', 'musk-1']:
-            main(dataset=file,device_number=2)
-        else:
-            # main(dataset=file,device_number=2)
+    for file in files[80:100]:
+        if file in ['adult','chess-krvk','connect-4','letter','magic','miniboone','statlog-shuttle']:
+        # if file in ['spectf','molec-biol-promoter', 'musk-1']:
+            # main(dataset=file,device_number=5)
             pass
+        else:
+            main(dataset=file,device_number=5)
+            # pass

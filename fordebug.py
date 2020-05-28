@@ -12,8 +12,8 @@ from MRVFL import *
 import time
 
 root_path = '/home/hu/eRVFL/UCIdata'
-data_name = 'lung-cancer'
-n_device = 1
+data_name = 'car'
+n_device = 7
 print('Dataset Name:{}\nDevice Number:{}'.format(data_name, n_device))
 
 cp.cuda.Device(n_device).use()
