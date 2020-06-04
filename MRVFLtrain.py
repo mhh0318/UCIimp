@@ -12,7 +12,7 @@ from joblib import Parallel,delayed
 
 
 def MRVFLtrain(trainX, trainY, option):
-    fs_mode = 'INF'
+    fs_mode = 'LASSO'
     rand_seed = np.random.RandomState(2)
 
     [n_sample, n_dims] = trainX.shape
@@ -20,16 +20,12 @@ def MRVFLtrain(trainX, trainY, option):
     L = option.L
     C = option.C
     s = option.scale
-    mode = option.mode
     ratio = option.ratio
-    drop = option.drop
 
     TrainingAccuracy = cp.zeros(L)
 
-    if mode == 'merged':
-        drop_amount = cp.int(cp.floor(drop*N))
-        selected_amount = cp.int(cp.floor(ratio*N))
-        bi = []
+    selected_amount = cp.int(cp.floor(ratio*N))
+    bi = []
 
 
     A = []
@@ -50,12 +46,8 @@ def MRVFLtrain(trainX, trainY, option):
         if i == 0:
             w = s * 2 * cp.asarray(rand_seed.rand(n_dims, N)) - 1
 
-        elif mode == 'merged':
-            ######################### SETTING
-            # w = s * 2 * cp.asarray(rand_seed.rand(n_dims - drop_amount + N, N)) - 1
-            w = s * 2 * cp.asarray(rand_seed.rand(n_dims + selected_amount - drop_amount + N, N)) - 1
-            # w = s * 2 * cp.asarray(rand_seed.rand(n_dims + selected_amount*i - drop_amount + N, N)) - 1
-
+        else:
+            w = s * 2 * cp.asarray(rand_seed.rand(n_dims + selected_amount*i + N, N)) - 1
 
         b = s * cp.asarray(rand_seed.rand(1, N))
         weights.append(w)
@@ -79,12 +71,12 @@ def MRVFLtrain(trainX, trainY, option):
 
         if fs_mode == 'LASSO':
             significance = cp.linalg.norm(beta_, ord=1, axis=1)
-            ranked_index = cp.argsort(significance[n_dims:-1])
+            ranked_index = cp.argsort(significance[n_dims:n_dims+N])
         if fs_mode == 'RIDGE':
             significance = cp.linalg.norm(beta_, ord=2, axis=1)
-            ranked_index = cp.argsort(significance[n_dims:-1])
+            ranked_index = cp.argsort(significance[n_dims:n_dims+N])
         elif fs_mode == 'MI':
-            at = cp.asnumpy(A_tmp[:,n_dims:-1])
+            at = cp.asnumpy(A_tmp[:,n_dims:n_dims+N])
             ty = cp.asnumpy(cp.asarray([cp.argmax(i) for i in trainY]))
             mis = mi(at, ty)
             # with joblib.parallel_backend('loky'):
@@ -92,7 +84,7 @@ def MRVFLtrain(trainX, trainY, option):
             # ranked_index = cp.argsort(cp.asarray(mis).ravel())
             ranked_index = cp.argsort(mis)
         elif fs_mode == 'INF':
-            at = cp.asnumpy(A_tmp[:, n_dims:-1])
+            at = cp.asnumpy(A_tmp[:,n_dims:n_dims+N])
             rank, score = inf_fs(at)
             ranked_index = rank
 
@@ -102,23 +94,18 @@ def MRVFLtrain(trainX, trainY, option):
         selected_index = ranked_index[:selected_amount]  # chosen features, used in the next layers
 
         sfi.append(selected_index)
-        left_amount = N - drop_amount
-        left_index = ranked_index[:left_amount]
-        A_except_trainX = A_tmp[:, n_dims: -1]
+        A_except_trainX = A_tmp[:, n_dims: n_dims+N]
         A_selected = A_except_trainX[:, selected_index]
         fs.append(A_selected)
-        A_ = A_except_trainX[:,left_index]
 
         ################### SETTING
-        sf = A_selected
-        # sf = cp.concatenate(fs, axis=1)
+        # sf = A_selected
+        sf = cp.concatenate(fs, axis=1)
 
         ################### SETTING
         A_input = cp.concatenate([trainX, sf, A_], axis=1)
         # A_input = cp.concatenate([trainX,  A_], axis=1)
 
-
-        bi.append(left_index)
 
         pred_result = cp.zeros((n_sample, i+1))
         for j in range(i+1):
@@ -150,6 +137,6 @@ def MRVFLtrain(trainX, trainY, option):
 
 
 
-    model = mod(L, weights, biases, beta, mu, sigma, sfi, bi)
+    model = mod(L, weights, biases, beta, mu, sigma, sfi, bi, N)
 
     return model, TrainingAccuracy, Training_time

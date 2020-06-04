@@ -12,7 +12,7 @@ from MRVFL import *
 import time
 
 root_path = '/home/hu/eRVFL/UCIdata'
-data_name = 'car'
+data_name = 'acute-nephritis'
 n_device = 7
 print('Dataset Name:{}\nDevice Number:{}'.format(data_name, n_device))
 
@@ -84,8 +84,8 @@ for i in range(n_CV):
             for r in cp.arange(0, 0.6, 0.3):
             #for r in [0]:
                 option.ratio = r
-                for d in cp.arange(0, 0.6, 0.3):
-                #for d in [0]:
+                # for d in cp.arange(0, 0.6, 0.3):
+                for d in [0]:
                     sto = time.time()
                     option.drop = d
                     train_idx_val = cp.where(validation[:, i] == 0)[0]

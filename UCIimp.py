@@ -73,9 +73,9 @@ def main(dataset,device_number):
     train_time_result = cp.zeros((n_CV, 1))
     test_time_result = cp.zeros((n_CV, 1))
 
-    option_best = op(N=256, L=32, C=2 ** -6, scale=1, seed=0, nCV=0, ratio=0, mode='merged', drop=0)
-    option_sbest = op(N=256, L=32, C=2 ** -6, scale=1, seed=0, nCV=0, ratio=0, mode='merged', drop=0)
-    option_tbest = op(N=256, L=32, C=2 ** -6, scale=1, seed=0, nCV=0, ratio=0, mode='merged', drop=0)
+    option_best = op(N=256, L=32, C=2 ** -6, scale=1, seed=0, nCV=0, ratio=0, mode='abundant', drop=0)
+    option_sbest = op(N=256, L=32, C=2 ** -6, scale=1, seed=0, nCV=0, ratio=0, mode='abundant', drop=0)
+    option_tbest = op(N=256, L=32, C=2 ** -6, scale=1, seed=0, nCV=0, ratio=0, mode='abundant', drop=0)
     for i in range(n_CV):
         MAX_acc = 0
         sMAX_acc = 0
@@ -93,8 +93,8 @@ def main(dataset,device_number):
                 option.C = j
                 for r in cp.arange(0, 0.6, 0.1):
                     option.ratio = r
-                    # for d in [0]:
-                    for d in cp.arange(0, 0.6, 0.2):
+                    for d in [0]:
+                    # for d in cp.arange(0, 0.6, 0.2):
                         option.drop = d
                         train_idx_val = cp.where(validation[:, i] == 0)[0]
                         test_idx_val = cp.where(validation[:, i] == 1)[0]
@@ -186,15 +186,15 @@ def main(dataset,device_number):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='RVFL-mFS-INF-5.txt', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename='RVFL-aFS-l1-3.txt', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
     logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
     logging.debug('Start of program')
     files = os.listdir('/home/hu/eRVFL/UCIdata')
-    for file in files[100:121]:
+    for file in files[60:80]:
         if file in ['adult','chess-krvk','connect-4','letter','magic','miniboone','statlog-shuttle']:
         # if file in ['spectf','molec-biol-promoter', 'musk-1']:
             # main(dataset=file,device_number=5)
             pass
         else:
-            main(dataset=file,device_number=1)
+            main(dataset=file,device_number=5)
             # pass

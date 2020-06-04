@@ -14,7 +14,7 @@ def MRVFLpredict(testX, testY, model):
     sigma = model.sigma
     L = model.L
     sfi = model.sfi
-    bi = model.bi
+    N = model.N
     TestingAccuracy= cp.zeros(L)
 
     A = []
@@ -34,13 +34,12 @@ def MRVFLpredict(testX, testY, model):
             A_tmp = cp.concatenate([testX, A_, sf_tmp, cp.ones((n_sample, 1))], axis=1)
 
         A.append(A_tmp)
-        A_except_testX = A_tmp[:, n_dims: -1]
-        A_ = A_except_testX[:,bi[i]]
+        A_except_testX = A_tmp[:, n_dims: n_dims+N]
         A_select = A_except_testX[:, sfi[i]]
         fs.append(A_select)
 
-        sf_tmp = A_select
-        #sf_tmp = cp.concatenate(fs, axis=1)
+        # sf_tmp = A_select
+        sf_tmp = cp.concatenate(fs, axis=1)
 
         ############ SETTINNG
         A_input = cp.concatenate([testX, sf_tmp, A_], axis=1)
