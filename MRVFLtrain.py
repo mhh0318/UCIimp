@@ -4,8 +4,7 @@ from function import *
 from l2_weights import *
 from majorityVoting import *
 from model import model as mod
-        elif mode == 'append':
-            w = s * 2 * cp.asarray(rand_seed.rand(n_dims + selected_amount - drop_amount + N, N)) - 1
+
 
 def MRVFLtrain(trainX, trainY, option):
     # mode = 'append'
