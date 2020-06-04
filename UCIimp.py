@@ -186,15 +186,15 @@ def main(dataset,device_number):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='RVFL-mFS-INF-4.txt', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename='RVFL-mFS-INF-5.txt', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
     logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
     logging.debug('Start of program')
     files = os.listdir('/home/hu/eRVFL/UCIdata')
-    for file in files[80:100]:
+    for file in files[100:121]:
         if file in ['adult','chess-krvk','connect-4','letter','magic','miniboone','statlog-shuttle']:
         # if file in ['spectf','molec-biol-promoter', 'musk-1']:
             # main(dataset=file,device_number=5)
             pass
         else:
-            main(dataset=file,device_number=5)
+            main(dataset=file,device_number=1)
             # pass

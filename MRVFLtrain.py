@@ -12,7 +12,7 @@ from joblib import Parallel,delayed
 
 
 def MRVFLtrain(trainX, trainY, option):
-    fs_mode = 'RIDGE'
+    fs_mode = 'INF'
     rand_seed = np.random.RandomState(2)
 
     [n_sample, n_dims] = trainX.shape
